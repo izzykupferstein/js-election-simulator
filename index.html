@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>Elections simulator</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<style>
+			body {
+				background: #f7f7f7;
+				line-height: 28px;
+			}
+			#render {
+				margin: 22px;
+			}
+			article {
+				padding: 14px 0;
+				border-bottom: 1px solid #ccc;
+			}
+			article:first-of-type {
+				border-top: 1px solid #ccc;
+			}
+			p {
+				margin: 5px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="render"></div>
+		<script src="http://cdn.jsdelivr.net/bluebird/3.5.0/bluebird.min.js"></script>
+		<script src="js/election.js"></script>
+		<script src="js/render.js"></script>
+		<script src="js/test.js"></script>
+		<script>
+			var req = function ( filename ) {
+				return new Promise ( function ( resolve, reject ) {
+					var xhr = new XMLHttpRequest ();
+					xhr.open ( 'GET', filename, true );
+					xhr.onload = function ( e ) {
+						if ([ 2, 3 ].indexOf ( xhr.status[0] )) {
+							try {
+								resolve ( JSON.parse ( xhr.response ));
+							}
+							catch ( e ) {
+								reject ( new Error ( 'Response is not valid JSON' ));
+							}
+						}
+					};
+					xhr.send ();
+					return xhr;
+				});
+			};
+			
+			var names = { male: [], female: [], last: [] };
+			
+			Promise.all ([
+				req ( 'wordlists/male-names.json' ).then ( function ( data ) { names.male = data.names; }),
+				req ( 'wordlists/female-names.json' ).then ( function ( data ) { names.female = data.names; }),
+				req ( 'wordlists/given-names.json' ).then ( function ( data ) { names.last = data.names; })
+			]).then ( function () {
+				builtMockElection ();
+			});
+		</script>
+	</body>
+</html>
